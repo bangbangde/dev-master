@@ -18,7 +18,7 @@
   },
   "homepage": "https://github.com/bangbangde/dev-master#readme",
   "workspaces": [
-    "packages\\dev-ui",
-    "packages\\dev-service"
+    "packages/dev-ui",
+    "packages/dev-service"
   ]
 }

@@ -1,0 +1,1 @@
+export const genKey = () => Math.random().toString(32).slice(2);

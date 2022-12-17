@@ -1,16 +1,15 @@
 <template>
-  <span class="se-text">
-
-  </span>
+  <span class="se-text">{{content}}</span>
 </template>
 
 <script setup>
-
+const props = defineProps({
+  content: String
+});
 </script>
 
-<style scoped>
+<style>
 .se-text {
-  font-size: 12px;
-  outline: 1px solid red;
+  font-size: 14px;
 }
 </style>

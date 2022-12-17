@@ -1,5 +1,6 @@
 <template>
-  <div>
+  <div class="section-home">
+    <p>Simple Editor</p>
     <Editor />
   </div>
 </template>
@@ -9,6 +10,5 @@ import Editor from "@/components/Editor.vue";
 
 </script>
 
-<style lang="scss" scoped>
-
+<style>
 </style>

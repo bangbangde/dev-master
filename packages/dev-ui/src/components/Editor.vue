@@ -72,7 +72,7 @@ const data = reactive(preHandleData(article));
  */
 
 function beforeinput(ev) {
-//   console.log('beforeinput', ev);
+  console.log('beforeinput', ev);
 //   switch (ev.inputType) {
 //     case 'insertParagraph':
 //     case 'insertLineBreak':
@@ -84,16 +84,16 @@ function beforeinput(ev) {
 }
  
 function handleKeydown(ev) {
-  ev.preventDefault();
-  console.log('keydown', ev);
-  const selection = getSelection();
-  const { type, focusNode, } = selection;
-  // 光标在文本节点上
-  if (type === 'Caret' && focusNode.nodeType === 3) {
-    const elLine = focusNode.parentElement.parentElement;
-    const compLine = compRefs.value[elLine.id];
-    compLine.handleKeydown(ev, selection);
-  }
+  // ev.preventDefault();
+  // console.log('keydown', ev);
+  // const selection = getSelection();
+  // const { type, focusNode, } = selection;
+  // // 光标在文本节点上
+  // if (type === 'Caret' && focusNode.nodeType === 3) {
+  //   const elLine = focusNode.parentElement.parentElement;
+  //   const compLine = compRefs.value[elLine.id];
+  //   compLine.handleKeydown(ev, selection);
+  // }
 }
 
 function handleMousedown(ev) {

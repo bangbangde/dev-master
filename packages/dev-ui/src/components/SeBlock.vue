@@ -7,14 +7,14 @@
       :key="item.key"
       :data-text-index="index"
       :is="compMap[item.is]"
-      :content="item.content"
+      v-model:content="item.content"
       v-bind="item.props"
     />
   </div>
 </template>
 
 <script setup>
-import { ref, inject, useAttrs } from 'vue';
+import { ref, inject, useAttrs, nextTick } from 'vue';
 import Text from './SeText.vue';
 
 const compMap = {
@@ -37,15 +37,35 @@ const attrs = useAttrs();
 /**
  * 接管输入行为
  */
-function handleKeydown(ev, selection) {
-  const textIndex = selection.focusNode.parentElement.dataset['text-index'];
-  console.log(ev, textIndex);
-}
+// function beforeinput(ev, selection) {
+//   const { inputType, data, isComposing, composed } = ev;
+//   const { focusNode, focusOffset } = selection;
+//   const elText = focusNode.parentElement;
+//   const textIndex = elText.dataset.textIndex;
+//   // console.table({ inputType, data, isComposing, composed, focusNode, focusOffset, textIndex }, ['value']);
+//   switch (inputType) {
+//     case 'insertText':
+//       const str = props.content[textIndex].content;
+//       props.content[textIndex].content = str.substring(0, focusOffset) + data + str.substring(focusOffset)
+//       nextTick(() => {
+//         const nodeText = elText.childNodes[0];
+//         const range = selection.getRangeAt(0);
+//         range.setStart(nodeText, focusOffset + data.length);
+//         range.setEnd(nodeText, focusOffset + data.length);
+//       })
+//       ev.preventDefault();
+//       break;
+//     case 'insertParagraph':
+
+//       break;
+//   }
+  
+// }
 
 defineExpose({
   is: 'block',
   id: attrs.id,
-  handleKeydown
+  beforeinput
 })
 
 </script>

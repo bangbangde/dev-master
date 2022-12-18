@@ -65,6 +65,17 @@ function preHandleData(data) {
 // 响应式文档数据
 const data = reactive(preHandleData(article));
 
+const getDirectParentComp = (node) => {
+  if (node.id && compRefs.value[node.id]) {
+    return {
+      el: node,
+      comp: compRefs.value[node.id]
+    }
+  } else {
+    return node.parentElement && getDirectParentComp(node.parentElement);
+  }
+}
+
 /*
  *********************
  * 事件处理器
@@ -72,15 +83,16 @@ const data = reactive(preHandleData(article));
  */
 
 function beforeinput(ev) {
-  console.log('beforeinput', ev);
-//   switch (ev.inputType) {
-//     case 'insertParagraph':
-//     case 'insertLineBreak':
-//       ev.preventDefault();
-//       const selection = getSelection();
-//       console.log(selection);
-//       break;
-//   }
+  console.log('editor beforeinput', ev);
+  const selection = getSelection();
+  if (selection.type === 'Caret') { // 光标
+    const { comp } = getDirectParentComp(selection.focusNode);
+    comp.handleCaretInput(ev, selection);
+  } else if (selection.type === 'Range') { // 选区
+    // TODO
+  } else {
+    debugger
+  }
 }
  
 function handleKeydown(ev) {

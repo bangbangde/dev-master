@@ -6,6 +6,7 @@
       @beforeinput="beforeinput"
       @keydown="handleKeydown"
       @mousedown="handleMousedown"
+      @compositionstart="handleCompositionstart"
       @compositionend="handleCompositionend"
     >
       <component
@@ -21,7 +22,7 @@
 </template>
 
 <script setup>
-import { reactive, ref, provide } from "vue";
+import { reactive, ref, provide, nextTick } from "vue";
 import SeBlock from "./SeBlock.vue";
 import { genKey } from "./utils";
 
@@ -55,7 +56,14 @@ function preHandleData(data) {
         key: genKey(),
         is: 'block',
         content: [
-          { key: genKey(), is: 'text', content: 'hello world' }
+          { key: genKey(), is: 'text', content: 'hello' }
+        ] 
+      },
+      { 
+        key: genKey(),
+        is: 'block',
+        content: [
+          { key: genKey(), is: 'text', content: ' world' }
         ] 
       }
     ]
@@ -77,6 +85,17 @@ const getDirectParentComp = (node) => {
   }
 }
 
+function handleCaretInput(comp, ev, offset) {
+  if (ev.inputType === 'insertText') {
+    comp.insertText(ev.data, offset);
+    return;
+  }
+}
+
+function handleRangeInput(selection) {
+  
+}
+
 /*
  *********************
  * 事件处理器
@@ -84,29 +103,57 @@ const getDirectParentComp = (node) => {
  */
 
 function beforeinput(ev) {
+  console.log('beforeinput', ev);
+  // 接管所有输入行为
+  ev.preventDefault();
+
+  // composition 输入全部交由 composition 相关事件处理器
+  if (ev.inputType === 'insertCompositionText') return false;
+
   const selection = getSelection();
-  console.log(ev, selection.type, selection);
-  if (selection.type === 'Caret') { // 光标
+  
+  if (selection.type === 'Caret') { 
+
+    // 目前 comp 都是 Text 组件
     const { comp } = getDirectParentComp(selection.focusNode);
-    comp.handleCaretInput(ev, selection);
-  } else if (selection.type === 'Range') { // 选区
-    const { comp } = getDirectParentComp(selection.getRangeAt(0).commonAncestorContainer);
-    comp.handleRangeInput(ev, selection);
+    handleCaretInput(comp, ev, selection.focusOffset);
+
+  } else if (selection.type === 'Range') {
+    const anchor = getDirectParentComp(selection.anchorNode);
+
+    if (selection.anchorNode === selection.focusNode) {
+      anchor.comp.deleteAndCollapse(selection, () => {
+        if (ev.inputType === 'deleteContentBackward') return;
+        handleCaretInput(anchor.comp, ev, selection.focusOffset)
+      });
+    } else {
+      const focus = getDirectParentComp(selection.focusNode);
+      // TODO: 跨节点选区
+    }
+    
   } else {
     debugger
   }
 }
 
+function handleCompositionstart(ev) {
+  ev.preventDefault();
+  console.log('handleCompositionstart', ev);
+}
+
 function handleCompositionend(ev) {
   const selection = getSelection();
   console.log('handleCompositionend', ev, selection);
-  const { comp } = getDirectParentComp(selection.focusNode);
-  comp.handleRangeInput(ev, selection);
 }
  
 function handleKeydown(ev) {
-  // ev.preventDefault();
-  // console.log('keydown', ev);
+  const selection = getSelection();
+  if (ev.isComposing && !getSelection().isCollapsed) {
+    
+    return;
+  }
+  ev.preventDefault();
+  console.log('keydown', ev);
   // const selection = getSelection();
   // const { type, focusNode, } = selection;
   // // 光标在文本节点上

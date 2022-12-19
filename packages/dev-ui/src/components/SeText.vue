@@ -25,8 +25,8 @@ function insertText(data, offset) {
       console.warn('文本不一致，放弃光标定位');
     }
   })
-  ev.preventDefault();
 }
+
 // 回退键删除
 function deleteContentBackward(offset) {
   if (offset === 0) {
@@ -49,24 +49,45 @@ function deleteContentBackward(offset) {
       textNode = textRef.value.appendChild(document.createTextNode('\u200D'));
     }
   })
-  ev.preventDefault();
 }
 
-function setSelection() {
+// 设置光标
+function collapseTo(offset) {
   const textNode = textRef.value.childNodes[0];
-  getSelection().collapseToEnd(textNode);
+  offset === undefined ? getSelection().collapseToEnd(textNode) : getSelection().collapse(textNode, offset);
+}
+
+function deleteAndCollapse(selection, cb = () => {}) {
+  const offsets = [Math.min(selection.anchorOffset, selection.focusOffset), Math.max(selection.anchorOffset, selection.focusOffset)];
+  const newContent = props.content.substring(0, offsets[0]) + props.content.substring(offsets[1]);
+  emit('update:content', newContent);
+  nextTick(() => {
+    let textNode = textRef.value.childNodes[0];
+
+    if (textNode) {
+      selection.collapse(textNode, offsets[0]);
+      cb();
+    } else {
+      // 零宽字符仅用于 dom 层面占位，没有进入响应式数据，再次输入后会被刷掉
+      textNode = textRef.value.appendChild(document.createTextNode('\u200D'));
+      selection.collapse(textNode, offsets[0]);
+      cb();
+    }
+  })
 }
 
 defineExpose({
   insertText,
   deleteContentBackward,
-  setSelection
+  collapseTo,
+  deleteAndCollapse
 })
 </script>
 
 <style>
 .se-text {
   font-size: 14px;
+  white-space: pre;
 }
 .se-text::before {
   content: '\200D'

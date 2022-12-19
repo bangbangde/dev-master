@@ -6,6 +6,7 @@
       @beforeinput="beforeinput"
       @keydown="handleKeydown"
       @mousedown="handleMousedown"
+      @compositionend="handleCompositionend"
     >
       <component
         v-for="item in data.content"
@@ -83,16 +84,24 @@ const getDirectParentComp = (node) => {
  */
 
 function beforeinput(ev) {
-  console.log('editor beforeinput', ev);
   const selection = getSelection();
+  console.log(ev, selection.type, selection);
   if (selection.type === 'Caret') { // 光标
     const { comp } = getDirectParentComp(selection.focusNode);
     comp.handleCaretInput(ev, selection);
   } else if (selection.type === 'Range') { // 选区
-    // TODO
+    const { comp } = getDirectParentComp(selection.getRangeAt(0).commonAncestorContainer);
+    comp.handleRangeInput(ev, selection);
   } else {
     debugger
   }
+}
+
+function handleCompositionend(ev) {
+  const selection = getSelection();
+  console.log('handleCompositionend', ev, selection);
+  const { comp } = getDirectParentComp(selection.focusNode);
+  comp.handleRangeInput(ev, selection);
 }
  
 function handleKeydown(ev) {

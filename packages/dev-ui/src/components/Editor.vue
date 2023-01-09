@@ -22,57 +22,29 @@
 </template>
 
 <script setup>
-import { reactive, ref, provide, nextTick } from "vue";
+import { reactive, ref, provide } from "vue";
+import Editor from "../editor/index";
 import SeBlock from "./SeBlock.vue";
-import { genKey } from "./utils";
+
+// 响应式数据
+const data = reactive({
+  content: null
+});
 
 // 组件名-组件映射
 const compMap = {
   'block': SeBlock
 }
 
-// 组件引用
+// 组件id-组件引用映射
 const compRefs = ref({});
-provide('compRefs', compRefs);
 
-// 文档数据
-const article = {
-  meta: {
-    title: 'demo',
-    author: 'Frank'
-  },
-  content: []
-};
-
-/**
- * 预处理文档数据
- * - 给相关组件增加 key
- */
-function preHandleData(data) {
-  data = JSON.parse(JSON.stringify(data));
-  if (!data.content?.length) {
-    data.content = [
-      { 
-        key: genKey(),
-        is: 'block',
-        content: [
-          { key: genKey(), is: 'text', content: 'hello' }
-        ] 
-      },
-      { 
-        key: genKey(),
-        is: 'block',
-        content: [
-          { key: genKey(), is: 'text', content: ' world' }
-        ] 
-      }
-    ]
+// 编辑器实例
+const editor = new Editor({
+  onContentUpdate(content) {
+    data.content = content;
   }
-  return data;
-}
-
-// 响应式文档数据
-const data = reactive(preHandleData(article));
+});
 
 const getDirectParentComp = (node) => {
   if (node.id && compRefs.value[node.id]) {
@@ -95,12 +67,6 @@ function handleCaretInput(comp, ev, offset) {
 function handleRangeInput(selection) {
   
 }
-
-/*
- *********************
- * 事件处理器
- **********************
- */
 
 function beforeinput(ev) {
   console.log('beforeinput', ev);
@@ -145,46 +111,21 @@ function handleCompositionend(ev) {
   const selection = getSelection();
   console.log('handleCompositionend', ev, selection);
 }
- 
-function handleKeydown(ev) {
-  const selection = getSelection();
-  if (ev.isComposing && !getSelection().isCollapsed) {
-    
-    return;
-  }
-  ev.preventDefault();
-  console.log('keydown', ev);
-  // const selection = getSelection();
-  // const { type, focusNode, } = selection;
-  // // 光标在文本节点上
-  // if (type === 'Caret' && focusNode.nodeType === 3) {
-  //   const elLine = focusNode.parentElement.parentElement;
-  //   const compLine = compRefs.value[elLine.id];
-  //   compLine.handleKeydown(ev, selection);
-  // }
-}
 
-function handleMousedown(ev) {
-  // const { target } = ev;
-  // const selection = getSelection();
-  // console.log(target, selection);
-}
+provide('compRefs', compRefs);
+editor.setContent([]);
 
 </script>
 
 <style scoped>
 .simple-editor {
-  padding: 16px;
-  border: 2px solid gray;
-  background-color: aqua;
+  outline: 1px solid lightcoral;
 }
 .se-container {
   border-radius: 4px;
-  width: 100%;
   box-sizing: border-box;
   min-height: 1024px;
   padding: 20px 40px 90px 40px;
-  background-color: aliceblue;
 }
 .se-container:focus-visible {
     outline: none;

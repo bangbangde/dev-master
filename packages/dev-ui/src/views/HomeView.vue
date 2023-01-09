@@ -1,13 +1,10 @@
 <template>
-  <div class="section-home">
-    <p>Simple Editor</p>
-    <Editor />
+  <div class="homeview">
+    Home view.
   </div>
 </template>
 
 <script setup>
-import Editor from "@/components/Editor.vue";
-
 </script>
 
 <style>

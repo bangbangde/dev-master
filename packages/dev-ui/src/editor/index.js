@@ -1,3 +1,4 @@
+import { genKey } from "./utils";
 /**
  * 预处理富文本源码
  */
@@ -9,7 +10,7 @@ function preHandleContent(content) {
   if (content.length === 0) {
     content.push(createBlock('hello world'));
   }
-  return data;
+  return content;
 }
 
 /**
@@ -36,9 +37,16 @@ export default class Editor {
   constructor() {}
 
   /**
-   * 设置富文本内容
+   * 初始化内容
    */
   setContent(content) {
     this.content = preHandleContent(content);
+  }
+
+  /**
+   * 同步数据
+   */
+  updateByPath(path, content) {
+
   }
 }

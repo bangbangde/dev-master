@@ -1,3 +1,5 @@
 # dev-master
-TODO://12-16 1:23
-- 点击编辑器后将光标定位到合理的节点
+
+注意
+- 可以使用 vscode devcontainer
+- 在 .vscode/settings.json 中设置了 node path，按需更新或删除（不要忘了重新 install ）

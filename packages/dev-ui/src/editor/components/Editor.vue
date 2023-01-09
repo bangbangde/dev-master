@@ -23,7 +23,7 @@
 
 <script setup>
 import { reactive, ref, provide } from "vue";
-import Editor from "../editor/index";
+import Editor from "../index";
 import SeBlock from "./SeBlock.vue";
 
 // 响应式数据
@@ -62,10 +62,6 @@ function handleCaretInput(comp, ev, offset) {
     comp.insertText(ev.data, offset);
     return;
   }
-}
-
-function handleRangeInput(selection) {
-  
 }
 
 function beforeinput(ev) {
@@ -120,6 +116,7 @@ editor.setContent([]);
 <style scoped>
 .simple-editor {
   outline: 1px solid lightcoral;
+  margin: 8px;
 }
 .se-container {
   border-radius: 4px;

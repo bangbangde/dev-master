@@ -10,7 +10,8 @@ const router = createRouter({
       component: HomeView
     },
     { path: '/editor', name: 'editor', component: () => import("../views/EditorView.vue") },
-    { path: '/playground', name: 'playground', component: () => import("../views/Playground.vue") }
+    { path: '/playground', name: 'playground', component: () => import("../views/Playground.vue") },
+    { path: '/dev-ui', name: 'dev-ui', component: () => import("../../base-ui/Dev.vue") }
   ]
 })
 

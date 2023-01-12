@@ -1,0 +1,8 @@
+[
+  {
+    "is": "block",
+    "content": [
+      { "is": "text", "content": "hello world" }
+    ]
+  }
+]

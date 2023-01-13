@@ -1,4 +1,16 @@
 import { genKey } from "./utils";
+
+/**
+ * 节点类型
+ * - block 类型
+ *  - block
+ *  - quote
+ * - inline 类型
+ *  - text
+ *  - a
+ *  - code
+ */
+
 /**
  * 预处理富文本源码
  */
@@ -28,25 +40,46 @@ function createBlock(initContent) {
   }
 }
 
+class Model {}
+
+class Command {}
+
+
 /**
  * Simple Editor
  */
 export default class Editor {
-  content = null;
+  model = null;
+  command = null;
 
-  constructor() {}
+  constructor() {
+    this.model = new Model();
+    this.command = new Command(this.model);
+  }
 
-  /**
-   * 初始化内容
-   */
+  // 初始化文档
   setContent(content) {
-    this.content = preHandleContent(content);
+    this.command.initDocument(content);
   }
 
-  /**
-   * 同步数据
-   */
-  updateByPath(path, content) {
+  // 注册监听器
+  addEventlistener(event, handler) {
+    switch (event) {
+      case 'contentChange':
+        
+        break;
+    
+      default:
+        throw new Error(`unknown event: ${event}`);
+    }
+  }
+
+  registerPlugin(plugin) {
 
   }
+}
+
+const demoPlugin = {
+  registerNodeType: () => '',
+
 }

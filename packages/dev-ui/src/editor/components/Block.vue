@@ -19,7 +19,7 @@
  * 基础 Block - 文本行，仅可包含各种行内元素：text link code
  */
 import { ref, inject, useAttrs, nextTick } from 'vue';
-import Text from './SeText.vue';
+import Text from './Text.vue';
 
 const compMap = {
   'text': Text

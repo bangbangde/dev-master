@@ -24,7 +24,7 @@
 <script setup>
 import { reactive, ref, provide } from "vue";
 import Editor from "../index";
-import SeBlock from "./SeBlock.vue";
+import Block from "./Block.vue";
 
 // 响应式数据
 const data = reactive({
@@ -33,7 +33,7 @@ const data = reactive({
 
 // 组件名-组件映射
 const compMap = {
-  'block': SeBlock
+  'block': Block
 }
 
 // 组件id-组件引用映射

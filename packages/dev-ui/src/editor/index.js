@@ -1,85 +1,13 @@
 import { genKey } from "./utils";
 
-/**
- * 节点类型
- * - block 类型
- *  - block
- *  - quote
- * - inline 类型
- *  - text
- *  - a
- *  - code
- */
-
-/**
- * 预处理富文本源码
- */
-function preHandleContent(content) {
-  content = JSON.parse(JSON.stringify(content));
-  if (!Array.isArray(content)) throw new Error('文档数据格式错误：根结点不是数组。');
-
-  // 插入默认文本
-  if (content.length === 0) {
-    content.push(createBlock('hello world'));
-  }
-  return content;
-}
-
-/**
- * 创建 block
- * @param {string} initContent 
- * @returns 
- */
-function createBlock(initContent) {
-  return {
+export const createEditor = () => {
+  const editor = {
     key: genKey(),
-    is: 'block',
-    content: [
-      { key: genKey(), is: 'text', content: initContent }
-    ] 
+    content: null,
+    selection: null,
+    command: {
+    },
+    setContent(content) {}
   }
-}
-
-class Model {}
-
-class Command {}
-
-
-/**
- * Simple Editor
- */
-export default class Editor {
-  model = null;
-  command = null;
-
-  constructor() {
-    this.model = new Model();
-    this.command = new Command(this.model);
-  }
-
-  // 初始化文档
-  setContent(content) {
-    this.command.initDocument(content);
-  }
-
-  // 注册监听器
-  addEventlistener(event, handler) {
-    switch (event) {
-      case 'contentChange':
-        
-        break;
-    
-      default:
-        throw new Error(`unknown event: ${event}`);
-    }
-  }
-
-  registerPlugin(plugin) {
-
-  }
-}
-
-const demoPlugin = {
-  registerNodeType: () => '',
-
+  return editor;
 }

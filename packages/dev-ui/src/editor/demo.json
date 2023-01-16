@@ -1,7 +1,7 @@
 [
   {
     "is": "block",
-    "content": [
+    "children": [
       { "is": "text", "content": "hello world" }
     ]
   }

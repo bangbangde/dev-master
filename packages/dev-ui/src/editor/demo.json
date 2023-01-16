@@ -1,8 +1,10 @@
 [
   {
-    "is": "block",
+    "type": "block",
     "children": [
-      { "is": "text", "content": "hello world" }
+      { "type": "text", "text": "hello world" },
+      { "type": "image", "src": "./img.png" },
+      { "type": "text", "text": "!"}
     ]
   }
 ]

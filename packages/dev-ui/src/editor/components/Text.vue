@@ -1,12 +1,12 @@
 <template>
-  <span class="se-text" ref="textRef">{{content}}</span>
+  <span class="se-text" ref="textRef">{{text}}</span>
 </template>
 
 <script setup>
 import { ref, nextTick } from "vue";
 
 const props = defineProps({
-  content: String
+  text: String
 });
 const emit = defineEmits(['update:content'])
 
@@ -75,13 +75,12 @@ function deleteAndCollapse(selection, cb = () => {}) {
     }
   })
 }
+</script>
 
-defineExpose({
-  insertText,
-  deleteContentBackward,
-  collapseTo,
-  deleteAndCollapse
-})
+<script>
+export default {
+  inheritAttrs: false
+}
 </script>
 
 <style>

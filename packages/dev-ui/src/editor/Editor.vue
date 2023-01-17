@@ -9,42 +9,59 @@
       @compositionstart="handleCompositionstart"
       @compositionend="handleCompositionend"
     >
-      <component
-        v-for="item in data.content"
-        :ref="el => compRefs[item.key] = el"
-        :id="item.key"
-        :key="item.key"
-        :is="compMap[item.is]"
-        :content="item.content"
-      />
+      <Node :children="data.content" />
     </div>
   </div>
 </template>
 
 <script setup>
-import { reactive, ref, provide } from "vue";
-import Editor from "../index";
-import Block from "./Block.vue";
+import { reactive, ref, provide, watch } from "vue";
+import Node from "./components/Node.vue";
+import Block from "./components/Block.vue";
+import Text from "./components/Text.vue"
 
-// 响应式数据
+import { createEditor } from "./index.js";
+
+const components = {
+  'block': Block,
+  'text': Text
+};
+
+const nodeRefs = ref({});
+
+provide('components', components);
+provide('nodeRefs', nodeRefs);
+
 const data = reactive({
   content: null
 });
 
-// 组件名-组件映射
-const compMap = {
-  'block': Block
-}
+let editor = null;
 
-// 组件id-组件引用映射
-const compRefs = ref({});
 
-// 编辑器实例
-const editor = new Editor({
-  onContentUpdate(content) {
-    data.content = content;
+function init(options) {
+  editor = createEditor(options);
+  const { plugins } = editor;
+
+  // 注册插件
+  if (plugins && plugins.length) {
+    // 获取插件提供的组件
+    plugins.forEach(plugin => {
+      if (plugin.components) {
+        Object.entries(plugin.components).forEach(([k, v]) => {
+          components[k] = v;
+        })
+      }
+    })
   }
-});
+
+  data.content = editor.getContent();
+
+  // 绑定事件
+  editor.onChange = () => {
+    data.content = editor.getContent();
+  }
+}
 
 const getDirectParentComp = (node) => {
   if (node.id && compRefs.value[node.id]) {
@@ -108,8 +125,12 @@ function handleCompositionend(ev) {
   console.log('handleCompositionend', ev, selection);
 }
 
-provide('compRefs', compRefs);
-editor.setContent([]);
+defineExpose({
+  init,
+  setContent(content) {
+    editor && editor.setContent(content);
+  }
+})
 
 </script>
 

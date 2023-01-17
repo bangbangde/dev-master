@@ -1,10 +1,11 @@
 [
   {
     "type": "block",
+    "id": "0",
     "children": [
-      { "type": "text", "text": "hello world" },
-      { "type": "image", "src": "./img.png" },
-      { "type": "text", "text": "!"}
+      { "id": "1", "type": "text", "text": "hello world" },
+      { "id": "2", "type": "image", "src": "/src/assets/logo.svg" },
+      { "id": "3", "type": "text", "text": "!"}
     ]
   }
 ]

@@ -22,3 +22,26 @@ export interface Text extends Element {
   
   text: string
 }
+
+/**
+ * 配置对象
+ */
+
+interface plugin {
+  components: {
+    [key: string]: unknown
+  }
+}
+
+interface contentNode {
+  type: string
+  id?: string
+  children?: Array<contentNode>
+}
+
+type content = Array<contentNode>
+
+export interface Options {
+  plugins: Array<plugin>
+  content: content
+}

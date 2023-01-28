@@ -51,11 +51,11 @@ function init(options) {
   editor = createEditor(options);
   const { plugins } = editor;
 
-  // 注册插件
+  // 获取插件提供的组件并注册到 Editor 的组件 map 中
   if (plugins && plugins.length) {
-    // 获取插件提供的组件
     plugins.forEach(plugin => {
       if (plugin.components) {
+        // TODO 处理插件重名的情况
         Object.entries(plugin.components).forEach(([k, v]) => {
           components[k] = v;
         })
@@ -63,6 +63,7 @@ function init(options) {
     })
   }
 
+  // 初始化文档内容
   data.content = editor.content;
 
   // 绑定事件

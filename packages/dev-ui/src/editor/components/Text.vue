@@ -1,5 +1,9 @@
 <template>
-  <span class="se-text" ref="textRef">{{text}}</span>
+  <se-text
+    class="se-text"
+    :id="$attrs.id"
+    ref="textRef"
+  >{{text}}</se-text>
 </template>
 
 <script setup>
@@ -8,6 +12,7 @@ import { ref, nextTick } from "vue";
 const props = defineProps({
   text: String
 });
+
 const emit = defineEmits(['update:content'])
 
 const textRef = ref(null);

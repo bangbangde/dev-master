@@ -7,5 +7,10 @@
       { "id": "2", "type": "image", "src": "/src/assets/logo.svg" },
       { "id": "3", "type": "text", "text": "!"}
     ]
+  },
+  {
+    "type": "code",
+    "id": "4",
+    "code": "console.log(\"hello world\")"
   }
 ]

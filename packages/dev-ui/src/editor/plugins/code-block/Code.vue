@@ -1,7 +1,7 @@
 <template>
-  <div class="code-block">
+  <se-code class="code-block">
     <code>{{ code }}</code>
-  </div>
+  </se-code>
 </template>
 <script setup>
 defineProps({

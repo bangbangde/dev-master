@@ -14,24 +14,44 @@ export const createEditor = ({
   content = null
 }) => {
   let _content = content;
-  let _selection = null;
-  let _operations = [];
 
   const editor = {
     key: genKey(),
     plugins,
     command: {
       insertText: text => {},
-      insertNode: node => {}
-    },
-    getContent() {
-      return JSON.parse(JSON.stringify(_content));
+      insertNode: node => {},
+      mergeNodes: node => {}
     },
     setContent(content) {
       _content = JSON.parse(JSON.stringify(content));
-      editor.onChange()
+      editor.onChange();
     },
-    onChange: () => {}
+    onChange: () => {},
+    get content() {
+      return JSON.parse(JSON.stringify(_content));
+    },
+    get location() {
+      const selection = getSelection();
+      const range = selection.getRangeAt(0);
+      return {
+        selection,
+        range,
+        collapsed: range.collapsed,
+        start: {
+          node: range.startContainer,
+          offset: range.startOffset,
+          ref: null,
+          path: null
+        },
+        end: {
+          node: range.endContainer,
+          offset: range.endOffset,
+          ref: null,
+          path: null
+        }
+      }
+    }
   }
   return editor;
 }

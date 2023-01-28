@@ -1,11 +1,8 @@
 <template>
-  <div class="se-block">
+  <se-block class="se-block" :id="$attrs.id">
     <slot></slot>
-  </div>
+  </se-block>
 </template>
-
-<script setup>
-</script>
 
 <script>
 export default {
@@ -15,6 +12,7 @@ export default {
 
 <style>
 .se-block {
+  display: block;
   border: 1px dashed lightgreen;
   min-height: 1em;
   margin: 4px 0;

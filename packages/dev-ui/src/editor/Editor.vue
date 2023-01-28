@@ -5,22 +5,31 @@
       contenteditable="true"
       @beforeinput="beforeinput"
       @keydown="handleKeydown"
-      @mousedown="handleMousedown"
+      @mouseup="handleMouse"
       @compositionstart="handleCompositionstart"
       @compositionend="handleCompositionend"
     >
-      <Node :children="data.content" />
+      <Children :children="data.content" />
     </div>
   </div>
 </template>
 
 <script setup>
-import { reactive, ref, provide, watch } from "vue";
-import Node from "./components/Node.vue";
+import { reactive, ref, provide, onMounted } from "vue";
+import { getDirectParentComp, useEventListener } from "./utils.js";
+import Children from "./components/Children.vue";
 import Block from "./components/Block.vue";
 import Text from "./components/Text.vue"
 
 import { createEditor } from "./index.js";
+
+const props = defineProps({
+  options: Object
+})
+
+onMounted(() => {
+  init(props.options);
+})
 
 const components = {
   'block': Block,
@@ -38,7 +47,6 @@ const data = reactive({
 
 let editor = null;
 
-
 function init(options) {
   editor = createEditor(options);
   const { plugins } = editor;
@@ -55,63 +63,33 @@ function init(options) {
     })
   }
 
-  data.content = editor.getContent();
+  data.content = editor.content;
 
   // 绑定事件
   editor.onChange = () => {
-    data.content = editor.getContent();
-  }
-}
-
-const getDirectParentComp = (node) => {
-  if (node.id && compRefs.value[node.id]) {
-    return {
-      el: node,
-      comp: compRefs.value[node.id]
-    }
-  } else {
-    return node.parentElement && getDirectParentComp(node.parentElement);
-  }
-}
-
-function handleCaretInput(comp, ev, offset) {
-  if (ev.inputType === 'insertText') {
-    comp.insertText(ev.data, offset);
-    return;
+    data.content = editor.content;
   }
 }
 
 function beforeinput(ev) {
   console.log('beforeinput', ev);
-  // 接管所有输入行为
   ev.preventDefault();
-
-  // composition 输入全部交由 composition 相关事件处理器
-  if (ev.inputType === 'insertCompositionText') return false;
-
   const selection = getSelection();
-  
-  if (selection.type === 'Caret') { 
-
-    // 目前 comp 都是 Text 组件
-    const { comp } = getDirectParentComp(selection.focusNode);
-    handleCaretInput(comp, ev, selection.focusOffset);
-
-  } else if (selection.type === 'Range') {
-    const anchor = getDirectParentComp(selection.anchorNode);
-
+  if (selection.type === 'Range') {
     if (selection.anchorNode === selection.focusNode) {
-      anchor.comp.deleteAndCollapse(selection, () => {
-        if (ev.inputType === 'deleteContentBackward') return;
-        handleCaretInput(anchor.comp, ev, selection.focusOffset)
-      });
     } else {
-      const focus = getDirectParentComp(selection.focusNode);
-      // TODO: 跨节点选区
     }
-    
-  } else {
-    debugger
+    editor.command.splitNode()
+  }
+  switch (ev.inputType) {
+    case 'insertText':
+      editor.command.insertText(ev.data);
+      break;
+    case 'deleteContentBackward': break;
+    case 'deleteSoftLineBackward': break;
+    case 'insertParagraph': break;
+    default:
+      break;
   }
 }
 

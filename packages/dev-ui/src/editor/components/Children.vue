@@ -7,7 +7,7 @@
     :key="item.id"
     :is="components[item.type]"
   >
-    <Node v-if="item.children?.length" :children="item.children" />
+    <Children v-if="item.children?.length" :children="item.children" />
   </component>
 </template>
 

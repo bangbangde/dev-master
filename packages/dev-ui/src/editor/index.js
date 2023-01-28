@@ -21,9 +21,10 @@ export const createEditor = ({
     command: {
       // 文本
       insertText: (editor, text, options) => {},
+      removeText: (editor, text, options) => {},
+      // 节点
       insertNode: (editor, options) => {},
       mergeNodes: node => {},
-      // 节点
       // 选区控制
       collapse: () => {},
       move: () => {},

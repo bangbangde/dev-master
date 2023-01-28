@@ -19,9 +19,16 @@ export const createEditor = ({
     key: genKey(),
     plugins,
     command: {
-      insertText: text => {},
-      insertNode: node => {},
-      mergeNodes: node => {}
+      // 文本
+      insertText: (editor, text, options) => {},
+      insertNode: (editor, options) => {},
+      mergeNodes: node => {},
+      // 节点
+      // 选区控制
+      collapse: () => {},
+      move: () => {},
+      select: () => {},
+      setSelection: () => {}
     },
     setContent(content) {
       _content = JSON.parse(JSON.stringify(content));
@@ -31,27 +38,27 @@ export const createEditor = ({
     get content() {
       return JSON.parse(JSON.stringify(_content));
     },
-    get location() {
-      const selection = getSelection();
-      const range = selection.getRangeAt(0);
-      return {
-        selection,
-        range,
-        collapsed: range.collapsed,
-        start: {
-          node: range.startContainer,
-          offset: range.startOffset,
-          ref: null,
-          path: null
-        },
-        end: {
-          node: range.endContainer,
-          offset: range.endOffset,
-          ref: null,
-          path: null
-        }
-      }
-    }
+    // get location() {
+    //   const selection = getSelection();
+    //   const range = selection.getRangeAt(0);
+    //   return {
+    //     selection,
+    //     range,
+    //     collapsed: range.collapsed,
+    //     start: {
+    //       node: range.startContainer,
+    //       offset: range.startOffset,
+    //       ref: null,
+    //       path: null
+    //     },
+    //     end: {
+    //       node: range.endContainer,
+    //       offset: range.endOffset,
+    //       ref: null,
+    //       path: null
+    //     }
+    //   }
+    // }
   }
   return editor;
 }

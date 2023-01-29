@@ -9,57 +9,56 @@ const createOperation = {
   setNode: (path, property) => ({ type: 'set_node', property })
 }
 
-export const createEditor = ({
-  plugins = [],
-  content = null
-}) => {
-  let _content = content;
+/**
+ * 原子操作
+ */
+const AtomicOperations = {
+  // 文字操作
+  insertText(editor, text) {},
+  removeText(editor) {},
+  // 节点操作
+  insertNode(editor, node) {},
+  mergeNode(editor) {},
+  moveNode(editor) {},
+  removeNode(editor) {},
+  setNode(editor) {},
+  splitNode(editor) {},
+  // 选区操作
+  setSelection(editor, selection) {}
+}
 
+/**
+ * 上层操作指令，内部分解为原子操作
+ */
+const commands = {
+  insertText(editor, text) {
+    const { selection } = editor;
+    if (!selection) return;
+    editor.apply([
+      AtomicOperations.insertText(editor, text),
+      AtomicOperations.setSelection(editor, selection)
+    ])
+  }
+}
+
+export const createEditor = () => {
   const editor = {
     key: genKey(),
-    plugins,
-    command: {
-      // 文本
-      insertText: (editor, text, options) => {},
-      removeText: (editor, text, options) => {},
-      // 节点
-      insertNode: (editor, options) => {},
-      mergeNodes: node => {},
-      // 选区控制
-      collapse: () => {},
-      move: () => {},
-      select: () => {},
-      setSelection: () => {}
-    },
-    setContent(content) {
-      _content = JSON.parse(JSON.stringify(content));
-      editor.onChange();
-    },
+    content: [],
+    operations: [],
+    /**
+     * selection: {
+     *  collapsed: boolean
+     *  start: { path: number[], offset: number },
+     *  end: { path: number[], offset: number}
+     * }
+     */
+    selection: null,
     onChange: () => {},
-    get content() {
-      return JSON.parse(JSON.stringify(_content));
+    apply: (operations) => {
+
     },
-    // get location() {
-    //   const selection = getSelection();
-    //   const range = selection.getRangeAt(0);
-    //   return {
-    //     selection,
-    //     range,
-    //     collapsed: range.collapsed,
-    //     start: {
-    //       node: range.startContainer,
-    //       offset: range.startOffset,
-    //       ref: null,
-    //       path: null
-    //     },
-    //     end: {
-    //       node: range.endContainer,
-    //       offset: range.endOffset,
-    //       ref: null,
-    //       path: null
-    //     }
-    //   }
-    // }
+    commands: commands.map(fn => fn.bind(null, editor))
   }
   return editor;
 }

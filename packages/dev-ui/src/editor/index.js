@@ -1,51 +1,134 @@
-import { genKey } from "./utils";
+import { 
+  genKey,
+  createDeepCopy,
+  comparePlainObjects
+} from "./utils";
 
-const createOperation = {
-  insertText: (path, text) => ({ type: 'insert_text', path, text }),
-  removeText: (path, offset, backword) => ({ type: 'remove_text', path, offset, backword }),
-  insertNode: (path, offset, node) => ({}),
-  splitNode: (path) => ({}),
-  mergeNode: (head, tail) => ({}),
-  setNode: (path, property) => ({ type: 'set_node', property })
+/**
+ * 一条命令相当于一个事务，包含若干条原子操作，所有同步的原子操作结束后同步结果到 editor
+ */
+const startTransaction = (editor, fn) => {
+  return new Promise((resolve) => {
+    let res;
+    try {
+      const [content, selection] = createDeepCopy([editor.content, editor.selection]);
+      res = fn(content, selection);
+    } finally {
+      const {content, selection} = res || {};
+      editor.content = content;
+      editor.selection = selection;
+      editor.onChange(res);
+      resolve(res);
+    }
+  })
+}
+
+const Node = {
+  getNodeByPath(content, path) {
+    return path.reduce((p, c) => p[c], {children: content});
+  },
+  text: {
+    // 判断两个文本节点类型是否相同
+    equals(node, target) {
+      const ignore = {
+        type: null,
+        text: null
+      }
+      return comparePlainObjects({...node, ...ignore}, {...target, ...ignore})
+    }
+  }
 }
 
 /**
  * 原子操作
+ * 
+ * 所有操作都会返回全新的 content 以及 selection
  */
 const AtomicOperations = {
   // 文字操作
-  insertText(editor, text) {
-    const {selection} = editor;
-    const {path, offset} = selection
-    const node = selection.
+  insertText(content, selection, options) {
+    const { path, offset, text } = op;
+    return { content, selection };
   },
-  removeText(editor) {},
+  removeText(content, selection, options) {
+    return { content, selection };
+  },
   // 节点操作
-  insertNode(editor, node) {},
-  mergeNode(editor) {},
-  moveNode(editor) {},
-  removeNode(editor) {},
-  setNode(editor) {},
-  splitNode(editor) {},
+  insertNode(content, selection, options) {
+    const { node, path } = options;
+    const target = path.slice(0, path.length - 1).reduce((p, c) => p[c], content);
+    const index = path[path.length - 1];
+    target.splice(index, 0, node);
+    return { content, selection };
+  },
+  mergeNode(content, selection, options) {
+    return { content, selection };
+  },
+  moveNode(content, selection, options) {
+    return { content, selection };
+  },
+  removeNode(content, selection, options) {
+    return { content, selection };
+  },
+  setNode(content, selection, options) {
+    return { content, selection };
+  },
+  splitNode(content, selection, options) {
+    return { content, selection };
+  },
   // 选区操作
-  setSelection(editor, selection) {}
+  setSelection(content, selection, options) {
+    return { content, selection };
+  }
 }
 
 /**
  * 上层操作指令，内部分解为原子操作
+ * * 所有变更都必须由 command 发起
  */
-const commands = {
+const command = {
+  /**
+   * 插入文本
+   * 职责：
+   * - 判断是否需要插入新的节点
+   * - 将操作拆解为 removeNode、mergeNode、splitNode
+   */
   insertText(editor, text) {
-    const { selection, textMode } = editor;
-    if (!selection) return;
-    if (textMode) {
-      // 插入新的节点，因为要应用 textMode 指定的样式。这里不管当前光标所在节点和 textMode 是否匹配，一律新建 text 节点（后续归一化过程会合并）
-    } else {
-      editor.commit([
-        AtomicOperations.insertText(editor, text),
-        AtomicOperations.setSelection(editor, selection)
-      ])
-    }
+    startTransaction(editor, (content, selection) => {
+      const { textMode } = editor.textMode;
+      const {anchor, focus, collapsed} = selection;
+      if (collapsed) {
+        const targetNode = Node.getNodeByPath(content, anchor.path);
+
+        if (textMode && !Node.text.equals(targetNode, textMode)) {
+          // 需要插入新的文本节点以应用新的样式
+          return AtomicOperations.insertText(content, selection, { text });
+        } else {
+          // 样式匹配，可以在当前文本节点直接插入
+          return AtomicOperations.insertText(content, selection, { text });
+        }
+      } else {
+        const anchorNode = Node.getNodeByPath(content, anchor.path);
+        const focusNode = Node.getNodeByPath(content, focus.path);
+        // TODO
+      }
+    })
+  },
+  insertNodes(editor, nodes) {
+    startTransaction(editor, (content, selection) => {
+      if (selection) {
+        // TODO
+      } else {
+        let res;
+        nodes.forEach((node, i) => {
+          res = AtomicOperations.insertNode(content, selection, {
+            node, 
+            path: [content.length + i]
+          });
+        });
+        return res;
+      }
+    });
   }
 }
 
@@ -53,7 +136,6 @@ export const createEditor = () => {
   const editor = {
     key: genKey(),
     content: [],
-    operations: [],
     /**
      * 文本节点样式，如：加粗、斜体等等
      * 后续插入的文本要应用此样式
@@ -65,16 +147,21 @@ export const createEditor = () => {
     /**
      * selection: {
      *  collapsed: boolean
-     *  start: { path: number[], offset: number },
-     *  end: { path: number[], offset: number}
+     *  anchor: { path: number[], offset: number },
+     *  focus: { path: number[], offset: number}
      * }
      */
     selection: null,
-    onChange: () => {},
-    commit: (operations) => {
-
-    },
-    commands: commands.map(fn => fn.bind(null, editor))
+    onChange: () => {}
   }
+
+  editor.command = (function(){
+    const tmp = {};
+    Object.entries(command).forEach(([k, fn]) => {
+      tmp[k] = fn.bind(null, editor);
+    });
+    return tmp;
+  })();
+
   return editor;
 }

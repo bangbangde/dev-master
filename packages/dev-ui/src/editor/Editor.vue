@@ -4,8 +4,6 @@
       class="se-container"
       contenteditable="true"
       @beforeinput="beforeinput"
-      @keydown="handleKeydown"
-      @mouseup="handleMouse"
       @compositionstart="handleCompositionstart"
       @compositionend="handleCompositionend"
     >
@@ -48,8 +46,8 @@ const data = reactive({
 let editor = null;
 
 function init(options) {
-  editor = createEditor(options);
-  const { plugins } = editor;
+  const { plugins, content } = options;
+  editor = createEditor();
 
   // 获取插件提供的组件并注册到 Editor 的组件 map 中
   if (plugins && plugins.length) {
@@ -63,14 +61,19 @@ function init(options) {
     })
   }
 
-  // 初始化文档内容
-  data.content = editor.content;
-
   // 绑定事件
   editor.onChange = () => {
     data.content = editor.content;
   }
+
+  editor.command.insertNodes(content);
 }
+
+useEventListener(document, 'selectionchange', ev => {
+  if (editor) {
+    
+  }
+});
 
 function beforeinput(ev) {
   console.log('beforeinput', ev);

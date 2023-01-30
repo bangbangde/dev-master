@@ -7,6 +7,21 @@ export function useEventListener(target, event, callback) {
 
 export const genKey = () => Math.random().toString(32).slice(2);
 
+export const createDeepCopy = obj => JSON.parse(JSON.stringify(obj));
+
+/**
+ * 判断两个 plain 对象是否相同【属性数量、对应属性值均相同即可】
+ * @param {*} a object
+ * @param {*} b object
+ * @returns boolean
+ */
+export const comparePlainObjects = (a, b) => {
+  const keysA = Object.keys(a);
+  const keysB = Object.keys(b);
+  if (keysA !== keysB) return false;
+  return keysA.every(k => a[k] === b[k]);
+}
+
 export const getDirectParentComp = (nodeRefs, node) => {
   if (node.id && nodeRefs.value[node.id]) {
     return {

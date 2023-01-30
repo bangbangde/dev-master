@@ -6,6 +6,7 @@
       @beforeinput="beforeinput"
       @compositionstart="handleCompositionstart"
       @compositionend="handleCompositionend"
+      ref="editorNode"
     >
       <Children :children="data.content" />
     </div>
@@ -14,36 +15,56 @@
 
 <script setup>
 import { reactive, ref, provide, onMounted } from "vue";
-import { getDirectParentComp, useEventListener } from "./utils.js";
+import { debounce, useEventListener } from "./utils.js";
 import Children from "./components/Children.vue";
 import Block from "./components/Block.vue";
 import Text from "./components/Text.vue"
-
 import { createEditor } from "./index.js";
 
 const props = defineProps({
   options: Object
-})
-
-onMounted(() => {
-  init(props.options);
-})
+});
+const data = reactive({
+  content: null
+});
 
 const components = {
   'block': Block,
   'text': Text
 };
-
+const editorNode = ref(null);
 const nodeRefs = ref({});
+
+let editor = null;
 
 provide('components', components);
 provide('nodeRefs', nodeRefs);
 
-const data = reactive({
-  content: null
-});
+useEventListener(document, 'selectionchange', debounce(ev => {
+  if (editor) {
+    const selection = window.getSelection();
+    if (selection.rangeCount === 0) return;
+    const range = selection.getRangeAt(0);
+    // 如果选区不在编辑器内则丢弃
+    const rangeAncestor = range.commonAncestorContainer;
+    if (!editorNode.value.contains(rangeAncestor)) return;
+    console.log(range);
+    function getPathByNode(node) {
+      // TODO
+      return [];
+    }
+    editor.command.setSelection({
+      isCollapsed: selection.isCollapsed,
+      isForward: selection.anchorNode === range.startContainer ? (selection.anchorOffset <= selection.focusOffset) : false,
+      anchor: { path: getPathByNode(selection.anchorNode), offset: selection.anchorOffset },
+      focus: { path: getPathByNode(selection.focusNode), offset: selection.focusOffset}
+    });
+  }
+}, 100, { maxWait: 100, debug: false}));
 
-let editor = null;
+onMounted(() => {
+  init(props.options);
+})
 
 function init(options) {
   const { plugins, content } = options;
@@ -63,17 +84,12 @@ function init(options) {
 
   // 绑定事件
   editor.onChange = () => {
+    console.log('editor: onChange', editor);
     data.content = editor.content;
   }
 
   editor.command.insertNodes(content);
 }
-
-useEventListener(document, 'selectionchange', ev => {
-  if (editor) {
-    
-  }
-});
 
 function beforeinput(ev) {
   console.log('beforeinput', ev);

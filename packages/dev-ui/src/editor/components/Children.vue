@@ -1,11 +1,12 @@
 <template>
   <component
-    v-for="item in children"
+    v-for="(item, index) in children"
     v-bind="item"
     :ref="el => compRefs[item.id] = el"
     :id="item.id"
     :key="item.id"
     :is="components[item.type]"
+    :pathIndex="index"
   >
     <Children v-if="item.children?.length" :children="item.children" />
   </component>

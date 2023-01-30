@@ -33,8 +33,63 @@ export const getDirectParentComp = (nodeRefs, node) => {
   }
 }
 
-export function throttle(fn, delay){
-}
+export function debounce(fn, delay = 0, {immediate = false, maxWait, debug = false}) {
+  let lastInvokeTime = 0;
+  let timerId = null;
+  let firstInvokeTime = 0;
 
-export function debounce(fn,delay){
+  const log = (...args) => {
+    debug && console.log(...args);
+  }
+
+  function debounced(...args) {
+    log('debounce: event');
+    if (immediate) {
+      // 立即执行
+      const time = Date.now();
+      if (time - lastInvokeTime > delay) {
+        fn(...args);
+        log('debounce: invoked immediate');
+        if (maxWait) {
+          setTimeout(() => {
+            log('debounce: immediate maxWait');
+            lastInvokeTime = 0;
+          }, maxWait);
+        }
+      } else {
+        log('debounce: discard');
+      }
+      
+      lastInvokeTime = time;
+    } else {
+      // 延后执行
+      const time = Date.now();
+      if (timerId) {
+        clearTimeout(timerId);
+        timerId = null;
+
+        if (maxWait && (time - firstInvokeTime > maxWait)) {
+          fn(...args);
+          log('debounce: invoked delay (Timeout)');
+          firstInvokeTime = time;
+        } else {
+          timerId = setTimeout(() => {
+            fn(...args);
+            log('debounce: invoked delay');
+            timerId = null;
+          }, delay);
+          log('debounce: delay reset');
+        }
+      } else {
+        timerId = setTimeout(() => {
+          fn(...args);
+          log('debounce: invoked delay');
+          timerId = null;
+        }, delay);
+        firstInvokeTime = time;
+        log('debounce: delay set');
+      }
+    }
+  }
+  return debounced;
 }

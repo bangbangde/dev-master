@@ -78,7 +78,8 @@ const AtomicOperations = {
   },
   // 选区操作
   setSelection(content, selection, options) {
-    return { content, selection };
+    const { newProperties } = options;
+    return { content, selection: { ...selection, ...newProperties } };
   }
 }
 
@@ -95,12 +96,12 @@ const command = {
    */
   insertText(editor, text) {
     startTransaction(editor, (content, selection) => {
-      const { textMode } = editor.textMode;
+      const { curTextProps } = editor.curTextProps;
       const {anchor, focus, collapsed} = selection;
       if (collapsed) {
         const targetNode = Node.getNodeByPath(content, anchor.path);
 
-        if (textMode && !Node.text.equals(targetNode, textMode)) {
+        if (curTextProps && !Node.text.equals(targetNode, curTextProps)) {
           // 需要插入新的文本节点以应用新的样式
           return AtomicOperations.insertText(content, selection, { text });
         } else {
@@ -129,6 +130,11 @@ const command = {
         return res;
       }
     });
+  },
+  setSelection(editor, newProperties) {
+    startTransaction(editor, (content, selection) => {
+      return AtomicOperations.setSelection(content, selection, { newProperties });
+    });
   }
 }
 
@@ -143,7 +149,7 @@ export const createEditor = () => {
      * 可以理解为改属性映射到富文本编辑器工具栏里的加粗、斜体等按钮的选中状态
      * link:https://lark-assets-prod-aliyun.oss-cn-hangzhou.aliyuncs.com/yuque/0/2023/png/1576151/1675002523146-resources/1155537/png/62d85f28-49b3-441e-b5ac-a11e936b5f89.png?OSSAccessKeyId=LTAI4GGhPJmQ4HWCmhDAn4F5&Expires=1675004326&Signature=4JIeUn12Mty4KGGALaD8ckw6arE%3D
      */
-    textMode: null,
+    curTextProps: null,
     /**
      * selection: {
      *  collapsed: boolean
@@ -152,7 +158,9 @@ export const createEditor = () => {
      * }
      */
     selection: null,
-    onChange: () => {}
+    onChange: () => {},
+    addCurTextProp(prop, value) {},
+    removeCurTextProp(prop, value) {}
   }
 
   editor.command = (function(){

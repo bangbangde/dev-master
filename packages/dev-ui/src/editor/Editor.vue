@@ -37,9 +37,6 @@ const nodeRefs = ref({});
 
 let editor = null;
 
-provide('components', components);
-provide('nodeRefs', nodeRefs);
-
 useEventListener(document, 'selectionchange', debounce(ev => {
   if (editor) {
     const selection = window.getSelection();
@@ -122,6 +119,9 @@ function handleCompositionend(ev) {
   const selection = getSelection();
   console.log('handleCompositionend', ev, selection);
 }
+
+provide('components', components);
+provide('nodeRefs', nodeRefs);
 
 defineExpose({
   init,

@@ -3,10 +3,9 @@
     v-for="(item, index) in children"
     v-bind="item"
     :ref="el => compRefs[item.id] = el"
-    :id="item.id"
     :key="item.id"
     :is="components[item.type]"
-    :pathIndex="index"
+    :dataPathIndex="index"
   >
     <Children v-if="item.children?.length" :children="item.children" />
   </component>
@@ -20,6 +19,6 @@ defineProps({
 });
 
 const components = inject('components', {});
-const compRefs = inject('compRefs', {});
+const compRefs = inject('compRefs', new WeakMap());
 
 </script>

@@ -1,7 +1,7 @@
 <template>
-  <se-block class="se-block" :id="$attrs.id">
+  <div class="se-block" :data-path-index="$attrs.dataPathIndex">
     <slot></slot>
-  </se-block>
+  </div>
 </template>
 
 <script>

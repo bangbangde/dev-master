@@ -1,9 +1,9 @@
 <template>
-  <se-text
+  <span
     class="se-text"
-    :id="$attrs.id"
+    :data-path-index="$attrs.dataPathIndex"
     ref="textRef"
-  >{{text}}</se-text>
+  >{{text}}</span>
 </template>
 
 <script setup>

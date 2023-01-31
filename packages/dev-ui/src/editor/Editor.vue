@@ -33,7 +33,7 @@ const components = {
   'text': Text
 };
 const editorNode = ref(null);
-const nodeRefs = ref({});
+const nodeRefs = {};
 
 let editor = null;
 
@@ -45,17 +45,23 @@ useEventListener(document, 'selectionchange', debounce(ev => {
     // 如果选区不在编辑器内则丢弃
     const rangeAncestor = range.commonAncestorContainer;
     if (!editorNode.value.contains(rangeAncestor)) return;
-    console.log(range);
     function getPathByNode(node) {
       // TODO
-      return [];
+      const path = [];
+      while(node !== editorNode.value) {
+        if (node.dataset?.pathIndex != undefined) {
+          path.unshift(node.dataset?.pathIndex)
+        }
+        node = node.parentElement;
+      }
+      return path;
     }
     editor.command.setSelection({
       isCollapsed: selection.isCollapsed,
       isForward: selection.anchorNode === range.startContainer ? (selection.anchorOffset <= selection.focusOffset) : false,
       anchor: { path: getPathByNode(selection.anchorNode), offset: selection.anchorOffset },
       focus: { path: getPathByNode(selection.focusNode), offset: selection.focusOffset}
-    });
+    }, false);
   }
 }, 100, { maxWait: 100, debug: false}));
 
@@ -81,7 +87,7 @@ function init(options) {
 
   // 绑定事件
   editor.onChange = () => {
-    console.log('editor: onChange', editor);
+    console.log('editor: onChange', editor.operations);
     data.content = editor.content;
   }
 

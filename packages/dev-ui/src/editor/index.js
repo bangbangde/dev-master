@@ -8,27 +8,40 @@ import {
  * 一条命令相当于一个事务，包含若干条原子操作，所有同步的原子操作结束后同步结果到 editor
  */
 const startTransaction = (editor, fn) => {
+  editor.operations = [];
   return new Promise((resolve) => {
     let res;
     try {
       const [content, selection] = createDeepCopy([editor.content, editor.selection]);
-      res = fn(content, selection);
+      // 原子操作都应用到副本上
+      res = fn({
+        ...editor,
+        content,
+        selection
+      });
+    } catch(err) {
+      console.error(err);
     } finally {
+      // 应用所有原子操作产生的更新
       const {content, selection} = res || {};
       editor.content = content;
       editor.selection = selection;
-      editor.onChange(res);
+      editor.onChange({
+        operations: editor.operations,
+        ...res
+      });
       resolve(res);
     }
   })
 }
 
-const Node = {
-  getNodeByPath(content, path) {
-    return path.reduce((p, c) => p[c], {children: content});
+const Helper = {
+  node: {
+    getNodeByPath(content, path) {
+      return path.reduce((p, c) => p[c], {children: content});
+    }
   },
   text: {
-    // 判断两个文本节点类型是否相同
     equals(node, target) {
       const ignore = {
         type: null,
@@ -36,105 +49,74 @@ const Node = {
       }
       return comparePlainObjects({...node, ...ignore}, {...target, ...ignore})
     }
+  },
+  selection: {
   }
 }
 
-/**
- * 原子操作
- * 
- * 所有操作都会返回全新的 content 以及 selection
- */
-const AtomicOperations = {
-  // 文字操作
-  insertText(content, selection, options) {
-    const { path, offset, text } = op;
-    return { content, selection };
-  },
-  removeText(content, selection, options) {
-    return { content, selection };
-  },
-  // 节点操作
-  insertNode(content, selection, options) {
-    const { node, path } = options;
-    const target = path.slice(0, path.length - 1).reduce((p, c) => p[c], content);
-    const index = path[path.length - 1];
-    target.splice(index, 0, node);
-    return { content, selection };
-  },
-  mergeNode(content, selection, options) {
-    return { content, selection };
-  },
-  moveNode(content, selection, options) {
-    return { content, selection };
-  },
-  removeNode(content, selection, options) {
-    return { content, selection };
-  },
-  setNode(content, selection, options) {
-    return { content, selection };
-  },
-  splitNode(content, selection, options) {
-    return { content, selection };
-  },
-  // 选区操作
-  setSelection(content, selection, options) {
-    const { newProperties } = options;
-    return { content, selection: { ...selection, ...newProperties } };
-  }
-}
+const apply = (editor, operation) => {
+  // 操作的是副本，成功后再更新回 editor
+  const content = createDeepCopy(editor.content);
+  let selection = editor.selection && createDeepCopy(editor.selection);
 
-/**
- * 上层操作指令，内部分解为原子操作
- * * 所有变更都必须由 command 发起
- */
-const command = {
+  switch(operation.type) {
+    case 'insert_node': 
+      const { node, path } = operation;
+      const target = path.slice(0, path.length - 1).reduce((p, c) => p[c], content);
+      const index = path[path.length - 1];
+      target.splice(index, 0, node);    
+      break;
+    case 'insert_text': break;
+    case 'set_selection': break;
+    default:
+      throw new Error('unknown operation type: ' + op.type);
+  }
+
+  editor.content = content;
+  editor.selection = selection;
+  editor.operations.push(operation);
+
   /**
-   * 插入文本
-   * 职责：
-   * - 判断是否需要插入新的节点
-   * - 将操作拆解为 removeNode、mergeNode、splitNode
+   * 因为原子操作都是同步的，所以可以将刷新操作放到微任务队列，
+   * 保证一个指令不管调用了几个原子操作只触发一次刷新。
    */
-  insertText(editor, text) {
-    startTransaction(editor, (content, selection) => {
-      const { curTextProps } = editor.curTextProps;
-      const {anchor, focus, collapsed} = selection;
-      if (collapsed) {
-        const targetNode = Node.getNodeByPath(content, anchor.path);
+  if (editor.isFlushing) return;
+  editor.isFlushing = true;
+  Promise.resolve().then(() => {
+    // 可以在这里做 normalize
+  }).then(() => {
+    editor.isFlushing = false;
+    editor.onChange();
+    editor.operations = []
+  })
+}
 
-        if (curTextProps && !Node.text.equals(targetNode, curTextProps)) {
-          // 需要插入新的文本节点以应用新的样式
-          return AtomicOperations.insertText(content, selection, { text });
-        } else {
-          // 样式匹配，可以在当前文本节点直接插入
-          return AtomicOperations.insertText(content, selection, { text });
-        }
-      } else {
-        const anchorNode = Node.getNodeByPath(content, anchor.path);
-        const focusNode = Node.getNodeByPath(content, focus.path);
-        // TODO
-      }
-    })
+const command = {
+  insertText(editor, text) {
+    const { curTextProps, selection } = editor;
+    if (!selection) return;
+    // TODO
   },
   insertNodes(editor, nodes) {
-    startTransaction(editor, (content, selection) => {
-      if (selection) {
-        // TODO
-      } else {
-        let res;
-        nodes.forEach((node, i) => {
-          res = AtomicOperations.insertNode(content, selection, {
-            node, 
-            path: [content.length + i]
-          });
+    const {content, selection} = editor;
+    if (selection) {
+      // TODO
+    } else {
+      nodes.forEach((node, i) => {
+        editor.apply({
+          type: 'insert_node',
+          node, 
+          path: [content.length + i]
         });
-        return res;
-      }
-    });
+      });
+    }
   },
-  setSelection(editor, newProperties) {
-    startTransaction(editor, (content, selection) => {
-      return AtomicOperations.setSelection(content, selection, { newProperties });
-    });
+  setSelection(editor, newSelection, shouldUpdateDom) {
+    editor.apply({
+      type: 'set_selection',
+      newSelection,
+      shouldUpdateDom
+    })
   }
 }
 
@@ -142,6 +124,8 @@ export const createEditor = () => {
   const editor = {
     key: genKey(),
     content: [],
+    operations: [],
+    isFlushing: false,
     /**
      * 文本节点样式，如：加粗、斜体等等
      * 后续插入的文本要应用此样式
@@ -152,7 +136,8 @@ export const createEditor = () => {
     curTextProps: null,
     /**
      * selection: {
-     *  collapsed: boolean
+     *  isCollapsed: boolean
+     *  isForward: boolean
      *  anchor: { path: number[], offset: number },
      *  focus: { path: number[], offset: number}
      * }
@@ -160,9 +145,10 @@ export const createEditor = () => {
     selection: null,
     onChange: () => {},
     addCurTextProp(prop, value) {},
-    removeCurTextProp(prop, value) {}
+    removeCurTextProps(prop, value) {}
   }
 
+  editor.apply = apply.bind(null, editor);
   editor.command = (function(){
     const tmp = {};
     Object.entries(command).forEach(([k, fn]) => {

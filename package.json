@@ -1,8 +1,7 @@
 {
   "name": "dev-master",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "version": "0.0.0",
+  "private": true,
   "scripts": {
     "test": "node -v"
   },
@@ -20,5 +19,8 @@
   "workspaces": [
     "packages/*",
     "apps/*"
-  ]
+  ],
+  "dependencies": {
+    "set-hosts": "^1.0.0"
+  }
 }

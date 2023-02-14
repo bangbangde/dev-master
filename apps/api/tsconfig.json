@@ -9,7 +9,7 @@
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true
   },
-  "exclude": ["node_modules"],
+  "exclude": ["**/node_modules/**/*"],
   "extends": "tsconfig/base.json",
   "include": ["src"]
 }

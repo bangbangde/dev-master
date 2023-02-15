@@ -25,6 +25,10 @@ function fetchData() {
     .then((res) => {
       data.res = `Hi! ${res.nickname || ""}. 🎉🎉🎉 welcome 👏👏👏`;
     })
+    .catch((err) => {
+      console.error(err);
+      data.res = "net errorr 🤔";
+    })
     .finally(() => {
       data.loading = false;
     });

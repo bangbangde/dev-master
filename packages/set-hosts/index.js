@@ -49,7 +49,7 @@ function writeHostsFile(content) {
   return true
 }
 
-function set(host, ip, comment = 'by set-hosts.js') {
+function set(ip, host, comment = 'by set-hosts.js') {
   const {source, map} = getHostsContent();
   const target = map[host];
   if (target) {

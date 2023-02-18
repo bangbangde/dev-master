@@ -69,5 +69,5 @@ jobs:
         path: './apps/web/dist'
 
     - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v1
+      id: deployment
+      uses: actions/deploy-pages@v1

@@ -71,5 +71,6 @@ jobs:
         path: './apps/web/dist'
 
     - name: Deploy to GitHub Pages
+      if: ${{ steps.changed-web.outputs.changed != '' }}
       id: deployment
       uses: actions/deploy-pages@v1

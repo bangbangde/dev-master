@@ -7,6 +7,7 @@ get('ping', '/ping', async (ctx, next) => {
   await next();
 });
 
+//
 post('pong', '/pong', async (ctx, next) => {
   ctx.body = JSON.stringify(ctx.request);
   await next();

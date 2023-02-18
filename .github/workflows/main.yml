@@ -32,16 +32,30 @@ jobs:
       run: npm ci
 
     - name: check if apps/api changed
-      id: changed-api
+      if: ${{ github.event_name != 'workflow_dispatch' }}
       run: |
-        files=`git diff --name-only HEAD^ HEAD -- apps/api`
-        if [ -n "$files" ]; then
-          echo "::set-output name=changed::true"
+        api_changed=`git diff --name-only HEAD^ HEAD -- apps/api`
+        if [ -n "$api_changed" ]; then
+          echo "API_CHANGED=true" >> $GITHUB_ENV
           npm run build -w api
         fi
+        web_changed=`git diff --name-only HEAD^ HEAD -- apps/web`
+        if [ -n "$web_changed" ]; then
+          echo "WEB_CHANGED=true" >> $GITHUB_ENV
+          npm run build -w web
+        fi
+
+
+    - name: check if apps/web changed
+      if: ${{ github.event_name == 'workflow_dispatch' }}
+      run: |
+        npm run build -w web -w api
+        echo "API_CHANGED=true" >> $GITHUB_ENV
+        echo "WEB_CHANGED=true" >> $GITHUB_ENV
+
 
     - name: deploy api
-      if: ${{ steps.changed-api.outputs.changed != '' }}
+      if: ${{ env.API_CHANGED != '' }}
       uses: appleboy/scp-action@master
       with:
         host: ${{ secrets.HOST }}
@@ -51,26 +65,17 @@ jobs:
         target: ${{ secrets.API_TARGET }}
         strip_components: 2
 
-    - name: check if apps/web changed
-      id: changed-web
-      run: |
-        files=`git diff --name-only HEAD^ HEAD -- apps/web`
-        if [ -n "$files" ]; then
-          echo "::set-output name=changed::true"
-          npm run build -w web
-        fi
-
     - name: Setup Pages
-      if: ${{ steps.changed-web.outputs.changed != '' }}
+      if: ${{ env.WEB_CHANGED != '' }}
       uses: actions/configure-pages@v3
 
     - name: Upload artifact
-      if: ${{ steps.changed-web.outputs.changed != '' }}
+      if: ${{ env.WEB_CHANGED != '' }}
       uses: actions/upload-pages-artifact@v1
       with:
         path: './apps/web/dist'
 
     - name: Deploy to GitHub Pages
-      if: ${{ steps.changed-web.outputs.changed != '' }}
+      if: ${{ env.WEB_CHANGED != '' }}
       id: deployment
       uses: actions/deploy-pages@v1

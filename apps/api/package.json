@@ -3,8 +3,9 @@
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
-  "devDependencies": {},
   "scripts": {
+    "dev": "cross-env nodemon --watch 'src/**/*.ts' --exec 'ts-node' src/index.ts",
+    "build": "tsc",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -17,5 +18,25 @@
   "bugs": {
     "url": "https://github.com/bangbangde/dev-master/issues"
   },
-  "homepage": "https://github.com/bangbangde/dev-master#readme"
+  "homepage": "https://github.com/bangbangde/dev-master#readme",
+  "dependencies": {
+    "@koa/router": "^12.0.0",
+    "dotenv": "^16.0.3",
+    "koa": "^2.14.1",
+    "koa-body": "^6.0.1",
+    "koa-session": "^6.3.1",
+    "mysql2": "^2.3.3"
+  },
+  "devDependencies": {
+    "@types/koa": "^2.13.5",
+    "@types/koa__router": "^12.0.0",
+    "@types/koa-session": "^5.10.6",
+    "@types/node": "^18.11.18",
+    "cross-env": "^7.0.3",
+    "eslint-config-custom-server": "*",
+    "nodemon": "^2.0.20",
+    "reflect-metadata": "^0.1.13",
+    "ts-node": "^10.9.1",
+    "tsconfig": "*"
+  }
 }

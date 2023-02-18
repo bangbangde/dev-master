@@ -3,39 +3,71 @@ on:
     branches:
     - main
     - release/*
+
 permissions:
   contents: read
   pages: write
   id-token: write
+
 jobs:
-  build:
-    name: build the apps/web
-    runs-on: ubuntu-latest
-    steps:
-    - name: checkout the repo
-      uses: actions/checkout@v3
-    - name: use node.js v18
-      uses: actions/setup-node@v3
-      with:
-        node-version: 18
-    - name: npm install, build
-      run: |
-        npm install
-        npm run build -w web --if-present
-    - name: Setup Pages
-      uses: actions/configure-pages@v3
-    - name: Upload artifact
-      uses: actions/upload-pages-artifact@v1
-      with:
-        path: './apps/web/dist'
-  deploy:
-    name: deploy to github pages
+  api:
+    name: build & deploy apps/api
     runs-on: ubuntu-latest
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
-    needs: build
+
     steps:
-      - name: Deploy to GitHub Pages
+    - name: checkout the repo
+      uses: actions/checkout@v3
+
+    - name: use node.js v18
+      uses: actions/setup-node@v3
+      with:
+        node-version: 18
+
+    - name: npm install
+      run: npm ci
+
+    - name: check if apps/api changed
+      id: changed-api
+      run: |
+        files=`git diff --name-only HEAD^ HEAD -- apps/api`
+        if [ -n "$files" ]; then
+          echo "::set-output name=changed::true"
+          npm run build -w api
+        fi
+
+    - name: deploy api
+      if: ${{ steps.changed-api.outputs.changed != '' }}
+      uses: appleboy/scp-action@master
+      with:
+        host: ${{ secrets.HOST }}
+        username: ${{ secrets.USERNAMER }}
+        key: ${{ secrets.KEY }}
+        source: "apps/api/dist,apps/api/package.json"
+        target: ${{ secrets.API_TARGET }}
+        strip_components: 2
+
+    - name: check if apps/web changed
+      id: changed-web
+      run: |
+        files=`git diff --name-only HEAD^ HEAD -- apps/web`
+        if [ -n "$files" ]; then
+          echo "::set-output name=changed::true"
+          npm run build -w web
+        fi
+
+    - name: Setup Pages
+      if: ${{ steps.changed-web.outputs.changed != '' }}
+      uses: actions/configure-pages@v3
+
+    - name: Upload artifact
+      if: ${{ steps.changed-web.outputs.changed != '' }}
+      uses: actions/upload-pages-artifact@v1
+      with:
+        path: './apps/web/dist'
+
+    - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v1

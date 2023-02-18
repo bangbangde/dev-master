@@ -3,6 +3,7 @@ on:
     branches:
     - main
     - release/*
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -23,35 +24,45 @@ jobs:
       with:
         fetch-depth: 2
 
-    - name: use node.js v18
-      uses: actions/setup-node@v3
-      with:
-        node-version: 18
-
-    - name: npm install
-      run: npm ci
-
     - name: check if apps/api changed
       if: ${{ github.event_name != 'workflow_dispatch' }}
       run: |
         api_changed=`git diff --name-only HEAD^ HEAD -- apps/api`
         if [ -n "$api_changed" ]; then
           echo "API_CHANGED=true" >> $GITHUB_ENV
-          npm run build -w api
         fi
         web_changed=`git diff --name-only HEAD^ HEAD -- apps/web`
         if [ -n "$web_changed" ]; then
           echo "WEB_CHANGED=true" >> $GITHUB_ENV
-          npm run build -w web
         fi
-
 
     - name: check if apps/web changed
       if: ${{ github.event_name == 'workflow_dispatch' }}
       run: |
-        npm run build -w web -w api
         echo "API_CHANGED=true" >> $GITHUB_ENV
         echo "WEB_CHANGED=true" >> $GITHUB_ENV
+
+    - name: use node.js v18
+      if: ${{ env.API_CHANGED != '' ||  env.WEB_CHANGED != ''}}
+      uses: actions/setup-node@v3
+      with:
+        node-version: 18
+
+    - name: build
+      if: ${{ env.API_CHANGED != '' ||  env.WEB_CHANGED != ''}}
+      run: |
+        npm ci
+        if [ -n "$API_CHANGED" ]; then
+          npm run build -w api
+        fi
+        if [ -n "$API_CHANGED" ]; then
+          npm run build -w api
+        fi
+        web_changed=`git diff --name-only HEAD^ HEAD -- apps/web`
+        if [ -n "$WEB_CHANGED" ]; then
+          npm run build -w web
+        fi
+
 
 
     - name: deploy api

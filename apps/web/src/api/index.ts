@@ -1,5 +1,4 @@
-import { HOST, defineApi } from "./base";
-export { HOST };
+import { API, postJson } from "./base";
 
-export const ping = defineApi("/ping");
-export const test = defineApi("/test", "get", HOST.api);
+export const ping = () => postJson(API.ping);
+export const chat = (msg: string) => postJson(API.chat, { msg });

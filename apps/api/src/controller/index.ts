@@ -1,6 +1,8 @@
 // Docs: https://github.com/koajs/router/blob/master/API.md
 import Koa from "koa";
 import router, { get, post } from "./common";
+import "./chat";
+import "./proxy";
 
 get('ping', '/ping', async (ctx, next) => {
   ctx.body = `ping success: ${new Date().toLocaleTimeString()}`

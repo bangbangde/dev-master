@@ -19,7 +19,8 @@ export default defineConfig({
   server: {
     proxy: {
       "/api": {
-        target: "http://dev.codebuff.tech",
+        target: "http://localhost:3001",
+        // target: "http://dev.codebuff.tech",
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api/, ""),
       },

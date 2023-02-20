@@ -1,7 +1,7 @@
 import { all } from "./common";
 import * as Proxy from "../service/proxy";
 
-all('proxy', '/proxy/*', async (ctx, next) => {
+all('proxy', '/proxy', async (ctx, next) => {
   const { url, method, headers, body } = ctx.request?.body;
   const response = Proxy.bypass({
     url,

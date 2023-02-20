@@ -26,7 +26,10 @@ export const postJson = async (
 ) => {
   const res = await fetch(url, {
     method: "POST",
-    body: data as unknown as BodyInit,
+    headers: {
+      "content-type": "application/json",
+    },
+    body: JSON.stringify(data),
   });
   return await res.json();
 };

@@ -10,4 +10,5 @@ export const HOST = {
 export const API = {
   ping: _("/ping"),
   chat: _("/chat"),
+  initChat: _("/init-chat"),
 };

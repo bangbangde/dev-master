@@ -87,7 +87,7 @@ function sendMessage(ev: MouseEvent) {
   width: 100%;
   resize: none;
   max-height: 200px;
-  height: 24px;
+  min-height: 24px;
   overflow-y: hidden;
   appearance: none;
   background-color: #fff;

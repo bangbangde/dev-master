@@ -49,7 +49,7 @@ const Cache = (function () {
     return storeData || [];
   };
   const save = (data: string[]) => {
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(data.list));
+    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
   };
   return {
     load,
@@ -78,6 +78,9 @@ function submit(ev: any) {
 
   if (inputText.value.trim() === "") return;
   if (status.loading) return;
+  if (status.error !== "") {
+    records.value.pop();
+  }
   records.value.push("Human: " + inputText.value);
   inputText.value = "";
   const prompt = records.value.join("\n");

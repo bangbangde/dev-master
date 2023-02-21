@@ -2,6 +2,11 @@ import Koa from 'koa';
 import koaBody from 'koa-body';
 import session from 'koa-session';
 import controller from './controller';
+import dotenv from "dotenv";
+
+dotenv.config();
+
+console.log('dotenv:', process.env.OPENAI_KEY)
 
 const PORT = process.env.PORT || 3001;
 

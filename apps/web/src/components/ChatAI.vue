@@ -1,70 +1,19 @@
-<script setup lang="ts">
-import { reactive, onMounted } from "vue";
-import * as Api from "@/api";
-import CusTextarea from "./CusTextarea.vue";
-
-interface IData {
-  list: Array<{ from: "user" | "ai"; text: string }>;
-  text: string;
-  loading: boolean;
-}
-
-const data: IData = reactive({
-  list: [],
-  text: "",
-  loading: false,
-});
-
-function submit() {
-  sendMessage();
-}
-
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-function sendMessage() {
-  const text = data.text;
-  data.text = "";
-  data.loading = true;
-  data.list.push({
-    from: "user",
-    text,
-  });
-  return Api.chat(text)
-    .then((res) => {
-      console.log("response:", res);
-      data.list.push({
-        from: "ai",
-        text: res.text,
-      });
-    })
-    .finally(() => {
-      data.loading = false;
-    });
-}
-
-onMounted(() => {
-  Api.initChat().then((res) => {
-    console.log(res);
-  });
-  document.title = "Hi, Miss Cheng.";
-});
-</script>
-
 <template>
   <div class="chat">
     <div class="list">
-      <div class="list-item" v-for="(item, i) in data.list" :key="i">
-        <div class="avatar" :class="[item.from]"></div>
-        <div class="content">{{ item.text }}</div>
+      <div class="list-item" v-for="(item, i) in records" :key="i">
+        <div class="content">{{ item }}</div>
       </div>
+      <div v-if="status.error" class="error">{{ status.error }}</div>
     </div>
     <div class="foot-input">
       <CusTextarea
-        @keydown.enter.prevent="submit"
-        v-model="data.text"
+        @keydown="submit"
+        v-model="inputText"
         :minLine="1"
         :maxLine="4"
       ></CusTextarea>
-      <button class="btn-send" @click="sendMessage">
+      <button class="btn-send" @click="submit">
         <svg
           stroke="currentColor"
           fill="none"
@@ -84,6 +33,70 @@ onMounted(() => {
     </div>
   </div>
 </template>
+
+<script setup lang="ts">
+import { reactive, ref, type Ref } from "vue";
+import * as Api from "@/api";
+import CusTextarea from "./CusTextarea.vue";
+import useTitle from "@/useVue/useTitle";
+
+const Cache = (function () {
+  const STORAGE_KEY = "chat_session";
+  const load = () => {
+    const storeData = JSON.parse(
+      window.localStorage.getItem(STORAGE_KEY) as string
+    );
+    return storeData || [];
+  };
+  const save = (data: string[]) => {
+    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(data.list));
+  };
+  return {
+    load,
+    save,
+  };
+})();
+
+const records: Ref<string[]> = ref(Cache.load());
+const inputText = ref("");
+const status = reactive({
+  loading: false,
+  error: "",
+});
+
+useTitle("Hi, miss Chen!");
+
+function submit(ev: any) {
+  const { type, keyCode, shiftKey } = ev as KeyboardEvent;
+  if (type === "keydown") {
+    if (keyCode === 13 && !shiftKey) {
+      (ev as KeyboardEvent).preventDefault();
+    } else {
+      return;
+    }
+  }
+
+  if (inputText.value.trim() === "") return;
+  if (status.loading) return;
+  records.value.push("Human: " + inputText.value);
+  inputText.value = "";
+  const prompt = records.value.join("\n");
+  status.loading = true;
+  status.error = "";
+
+  // 滚到底部
+  Api.chat(prompt)
+    .then((res) => {
+      status.loading = false;
+      records.value.push("AI: " + res);
+      Cache.save(records.value);
+    })
+    .catch((err) => {
+      status.loading = false;
+      status.error = (err as Error).message;
+    });
+}
+</script>
 
 <style scoped>
 .chat {
@@ -150,5 +163,11 @@ textarea:focus-visible {
 
 .list-item {
   margin-bottom: 8px;
+}
+.error {
+  border: 1px solid #ca3c3c;
+  border-radius: 4px;
+  padding: 4px 8px;
+  background-color: #f1d2d2;
 }
 </style>

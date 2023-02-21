@@ -2,7 +2,10 @@ export const fetch = async (
   resource: URL | RequestInfo,
   option: RequestInit
 ) => {
-  return window.fetch(resource, option);
+  return window.fetch(resource, {
+    credentials: "same-origin",
+    ...option,
+  });
 };
 
 export const getJson = async (
@@ -22,7 +25,8 @@ export const getJson = async (
 
 export const postJson = async (
   url: string | URL,
-  data?: Record<string, string>
+  data?: Record<string, string>,
+  options?: Record<string, string>
 ) => {
   const res = await fetch(url, {
     method: "POST",
@@ -30,6 +34,7 @@ export const postJson = async (
       "content-type": "application/json",
     },
     body: JSON.stringify(data),
+    ...options,
   });
   return await res.json();
 };

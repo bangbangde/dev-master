@@ -8,7 +8,7 @@ const openai = new OpenAIApi(configuration);
 
 openai.createCompletion({
   model: "text-davinci-003",
-  prompt: "reset",
+  prompt: "hello",
   temperature: 0.9,
   max_tokens: 2048,
   top_p: 1,
@@ -17,9 +17,9 @@ openai.createCompletion({
   stop: [" Human:", " AI:"],
 }).then(res => {
   try {
-    console.log('chat response:', res.data.choices[0])
+    console.log("chat response:", res.data.choices[0]);
   } catch (err) {
     console.error(err);
   }
   return res;
-})
+});

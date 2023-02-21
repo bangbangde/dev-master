@@ -1,23 +1,24 @@
 import { post } from "./common";
-import { chat, init } from "../service/openai";
+import { chat } from "../service/openai";
+import { AxiosError } from "axios";
+
+const CK_CHAT_UID = "CK_CHAT_UID";
+const genUid = () => 'user_' + Math.random().toString(32).slice(2);
 
 post('chat', '/chat', async (ctx, next) => {
   const { msg } = ctx.request?.body;
-  try {
-    const res = await chat(msg);
-    ctx.body = res.data.choices[0];
-  } catch (err) {
-    console.error('err')
+  let uid = ctx.cookies.get(CK_CHAT_UID);
+  if (!!uid) {
+    uid = genUid();
+    ctx.cookies.set(CK_CHAT_UID, uid);
   }
-  await next();
-});
-
-post('initChat', '/init-chat', async (ctx, next) => {
   try {
-    const res = await init();
-    ctx.body = res.data.choices;
+    const res = await chat(msg, uid);
+    ctx.body = res.data.choices[0].text;
   } catch (err) {
-    console.error('err')
+    console.error('err', (err as Error).message);
+    ctx.status = 500;
+    ctx.message = (err as Error).message;
   }
   await next();
 });

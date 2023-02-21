@@ -64,7 +64,7 @@ const status = reactive({
   error: "",
 });
 
-useTitle("Hi, miss Chen!");
+useTitle("Hi, Miss Chen");
 
 function submit(ev: any) {
   const { type, keyCode, shiftKey } = ev as KeyboardEvent;

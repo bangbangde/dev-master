@@ -2,8 +2,15 @@ export const fetch = async (
   resource: URL | RequestInfo,
   option: RequestInit
 ) => {
+  const headers: Record<string, string> = {};
+  if (option.method?.toLowerCase() === "post") {
+    headers["content-type"] = "application/json";
+  }
+  // eslint-disable-next-line no-debugger
+  debugger;
   return window.fetch(resource, {
     credentials: "same-origin",
+    headers,
     ...option,
   });
 };

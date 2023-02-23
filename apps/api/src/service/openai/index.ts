@@ -5,6 +5,7 @@ const configuration = new Configuration({
 });
 
 export const openai = new OpenAIApi(configuration);
+console.log(configuration);
 
 const initPrompt = `The following is a conversation with an AI assistant. The assistant is helpful, creative, clever, and very friendly.
 

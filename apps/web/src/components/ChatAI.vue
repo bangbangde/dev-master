@@ -90,7 +90,7 @@ function submit(ev: any) {
   }
   records.value.push("Human: " + inputText.value);
   inputText.value = "";
-  const prompt = records.value.join("\n");
+  const prompt = records.value.slice(-15).join("\n");
   status.loading = true;
   status.error = "";
   nextTick(scrollToBottom);

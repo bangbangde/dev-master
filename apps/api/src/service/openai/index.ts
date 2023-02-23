@@ -5,7 +5,6 @@ const configuration = new Configuration({
 });
 
 export const openai = new OpenAIApi(configuration);
-console.log(configuration);
 
 const initPrompt = `The following is a conversation with an AI assistant. The assistant is helpful, creative, clever, and very friendly.
 
@@ -17,7 +16,6 @@ AI: 你好👋
 
 export const chat = (msg: string, user?: string) => {
   const prompt = initPrompt + msg + '\nAI: ';
-  console.log('createCompletion:', prompt)
   return openai.createCompletion({
     model: "text-davinci-003",
     prompt,

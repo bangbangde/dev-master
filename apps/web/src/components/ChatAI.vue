@@ -93,7 +93,7 @@ function submit(ev: any) {
   const prompt = records.value.join("\n");
   status.loading = true;
   status.error = "";
-  nextTick(() => scrollToBottom);
+  nextTick(scrollToBottom);
 
   // 滚到底部
   Api.chat(prompt)
@@ -101,7 +101,7 @@ function submit(ev: any) {
       status.loading = false;
       records.value.push("AI: " + res);
       Cache.save(records.value);
-      nextTick(() => scrollToBottom);
+      nextTick(scrollToBottom);
     })
     .catch((err) => {
       status.loading = false;
@@ -124,7 +124,7 @@ function submit(ev: any) {
   padding: 0.75rem 0.75rem 0.75rem 1em;
   overflow: hidden;
   position: fixed;
-  bottom: 62px;
+  bottom: 18px;
   left: 1rem;
   right: 1rem;
   background: white;

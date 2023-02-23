@@ -35,7 +35,7 @@
 </template>
 
 <script setup lang="ts">
-import { reactive, ref, type Ref } from "vue";
+import { reactive, ref, nextTick, type Ref } from "vue";
 import * as Api from "@/api";
 import CusTextarea from "./CusTextarea.vue";
 import useTitle from "@/useVue/useTitle";
@@ -56,6 +56,13 @@ const Cache = (function () {
     save,
   };
 })();
+
+const scrollToBottom = () => {
+  window.scrollTo({
+    top: document.body.scrollHeight,
+    behavior: "smooth",
+  });
+};
 
 const records: Ref<string[]> = ref(Cache.load());
 const inputText = ref("");
@@ -86,6 +93,7 @@ function submit(ev: any) {
   const prompt = records.value.join("\n");
   status.loading = true;
   status.error = "";
+  nextTick(() => scrollToBottom);
 
   // 滚到底部
   Api.chat(prompt)
@@ -93,6 +101,7 @@ function submit(ev: any) {
       status.loading = false;
       records.value.push("AI: " + res);
       Cache.save(records.value);
+      nextTick(() => scrollToBottom);
     })
     .catch((err) => {
       status.loading = false;

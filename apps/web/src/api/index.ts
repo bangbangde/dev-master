@@ -5,4 +5,4 @@ export const chat = (msg: string) =>
   fetch(API.chat, {
     method: "POST",
     body: JSON.stringify({ msg }),
-  } as RequestInit).then((res) => res.text());
+  } as RequestInit);

@@ -1,8 +1,20 @@
 <template>
   <div class="chat">
     <div class="list">
+      <div class="list-item">
+        <p>
+          {{
+            `The following is a conversation with an AI assistant. The assistant is helpful, creative, clever, and very friendly.\n\n`
+          }}
+        </p>
+        <p>Human: Hello, who are you?</p>
+        <p>AI: I am an AI created by OpenAI. How can I help you today?</p>
+        <p>Human: 你好</p>
+        <p>AI: 你好 👋</p>
+      </div>
+      <div>Tips：使用<code>/clear</code>重置会话</div>
       <div class="list-item" v-for="(item, i) in records" :key="i">
-        <div class="content">{{ item }}</div>
+        <p>{{ item }}</p>
       </div>
       <div v-if="status.error" class="error">{{ status.error }}</div>
     </div>
@@ -72,7 +84,7 @@ const status = reactive({
 });
 
 onMounted(scrollToBottom);
-useTitle("❤️AI❤️");
+useTitle("👋 AI ❤️");
 
 function submit(ev: any) {
   const { type, keyCode, shiftKey } = ev as KeyboardEvent;
@@ -91,6 +103,7 @@ function submit(ev: any) {
   }
   if (inputText.value === "/clear") {
     records.value = [];
+    inputText.value = "";
     Cache.save(records.value);
     return;
   }
@@ -103,6 +116,13 @@ function submit(ev: any) {
 
   // 滚到底部
   Api.chat(prompt)
+    .then((res) => {
+      if (res.status === 200) {
+        return res.text();
+      } else {
+        throw new Error("request failed");
+      }
+    })
     .then((res) => {
       status.loading = false;
       records.value.push("AI: " + res);
@@ -180,7 +200,9 @@ textarea:focus-visible {
 }
 
 .list-item {
-  margin-bottom: 8px;
+  margin-bottom: 20px;
+  font-size: 18px;
+  white-space: pre;
 }
 .error {
   border: 1px solid #ca3c3c;

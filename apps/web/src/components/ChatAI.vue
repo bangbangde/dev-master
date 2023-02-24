@@ -202,7 +202,7 @@ textarea:focus-visible {
 .list-item {
   margin-bottom: 20px;
   font-size: 18px;
-  white-space: pre;
+  white-space: pre-line;
 }
 .error {
   border: 1px solid #ca3c3c;

@@ -35,7 +35,7 @@
 </template>
 
 <script setup lang="ts">
-import { reactive, ref, nextTick, type Ref } from "vue";
+import { reactive, ref, nextTick, onMounted, type Ref } from "vue";
 import * as Api from "@/api";
 import CusTextarea from "./CusTextarea.vue";
 import useTitle from "@/useVue/useTitle";
@@ -71,7 +71,8 @@ const status = reactive({
   error: "",
 });
 
-useTitle("Hi, Miss Chen");
+onMounted(scrollToBottom);
+useTitle("❤️AI❤️");
 
 function submit(ev: any) {
   const { type, keyCode, shiftKey } = ev as KeyboardEvent;

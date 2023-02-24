@@ -89,6 +89,11 @@ function submit(ev: any) {
   if (status.error !== "") {
     records.value.pop();
   }
+  if (inputText.value === "/clear") {
+    records.value = [];
+    Cache.save(records.value);
+    return;
+  }
   records.value.push("Human: " + inputText.value);
   inputText.value = "";
   const prompt = records.value.slice(-15).join("\n");

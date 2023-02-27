@@ -9,7 +9,7 @@ console.log("env", process.cwd(), env);
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  base: "/dev-master",
+  // base: "/dev-master",
   plugins: [vue(), vueJsx()],
   resolve: {
     alias: {
